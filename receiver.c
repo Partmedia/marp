@@ -4,6 +4,7 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +24,8 @@ void receiver_open(const char *device) {
 
     fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (fd == -1) {
-        perror("Could not open receiver");
+        fprintf(stderr, "Could not open receiver on '%s': %s\n",
+                device, strerror(errno));
         exit(EXIT_FAILURE);
     }
 

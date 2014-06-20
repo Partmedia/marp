@@ -17,6 +17,8 @@ static ROT *rot;
  * Initialize and open rotator interface. This function exits on error.
  */
 void rotator_open(int rot_model, const char *rot_file) {
+    rig_set_debug(RIG_DEBUG_WARN);
+
     rot = rot_init(rot_model);
     if (rot == NULL) {
         puts("Unknown rotator model!");

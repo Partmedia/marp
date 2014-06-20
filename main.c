@@ -82,6 +82,10 @@ static void parse_args(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    if (config.rot_file == NULL) {
+        config.rot_file = "/dev/ttyU0";
+    }
+
     if (config.receiver_file == NULL) {
         config.receiver_file = "/dev/ttyU1";
     }
@@ -92,18 +96,26 @@ static void parse_args(int argc, char *argv[]) {
 }
 
 /**
+ * Clean up before exiting.
+ */
+void cleanup() {
+    rotator_close();
+    receiver_close();
+}
+
+/**
  * Main program entry point.
  */
 int main(int argc, char *argv[]) {
     parse_args(argc, argv);
-    //rotator_open(config.rot_model, config.rot_file);
+    rotator_open(config.rot_model, config.rot_file);
     receiver_open(config.receiver_file);
+    atexit(cleanup);
 
     while (true) {
-        printf("Strength: %f\n", receiver_get_strength(0));
+        float azimuth, elevation;
+        rotator_get_position(&azimuth, &elevation);
+        printf("%f\t%f\t%f\n", azimuth, elevation, receiver_get_strength(0));
         sleep(1);
     }
-
-    //rotator_close();
-    receiver_close();
 }
