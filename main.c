@@ -12,7 +12,7 @@
 #include "rotator.h"
 
 /** Runtime configuration. */
-struct {
+static struct {
     char *rot_file, *receiver_file;
     int rot_model;
     int azimuth, azimuth_sweep;
@@ -37,6 +37,7 @@ static void print_usage() {
         "   -d DEVICE       Set antenna rotator device.\n"
         "   -h              Display this help message.\n"
         "   -m ID           Set antenna rotator model.\n"
+        "   -r DEVICE       Set receiver device.\n"
         "   -s SWEEP        Set azimuth sweep (default 360).\n"
     );
 }
@@ -108,6 +109,7 @@ void cleanup() {
  */
 int main(int argc, char *argv[]) {
     parse_args(argc, argv);
+
     rotator_open(config.rot_model, config.rot_file);
     receiver_open(config.receiver_file);
     atexit(cleanup);
@@ -116,6 +118,7 @@ int main(int argc, char *argv[]) {
         float azimuth, elevation;
         rotator_get_position(&azimuth, &elevation);
         printf("%f\t%f\t%f\n", azimuth, elevation, receiver_get_strength(0));
-        sleep(1);
+        fflush(stdout);
+        usleep(1e6 / 5);
     }
 }
