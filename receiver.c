@@ -67,13 +67,13 @@ float receiver_get_strength(int unit) {
     }
 
     // Read signal strength answer.
-    if (read(fd, buf, 8) != 8) {
+    if (read(fd, buf, 8) < 0) {
         perror("Receiver read error");
         return -1;
     }
 
     buf[sizeof(buf) - 1] = '\0';
-    value = atoi(&buf[3]) * 9;
+    value = atoi(&buf[3]);
 
     if (unit == 0 || unit == 2) {
         // Main transceiver values range from 0000 to 0030.

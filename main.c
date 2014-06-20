@@ -99,7 +99,10 @@ int main(int argc, char *argv[]) {
     //rotator_open(config.rot_model, config.rot_file);
     receiver_open(config.receiver_file);
 
-    printf("Strength: %f\n", receiver_get_strength(0));
+    while (true) {
+        printf("Strength: %f\n", receiver_get_strength(0));
+        sleep(1);
+    }
 
     //rotator_close();
     receiver_close();
