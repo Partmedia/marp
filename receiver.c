@@ -31,10 +31,6 @@ void receiver_open(const char *device) {
 
     tcgetattr(fd, &options);
 
-    // Set speed to 9600 baud.
-    cfsetispeed(&options, B9600);
-    cfsetospeed(&options, B9600);
-
     // Set 8 data bits and no parity.
     options.c_cflag |= (CLOCAL | CREAD);
     options.c_cflag &= ~PARENB;
