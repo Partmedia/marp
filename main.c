@@ -3,11 +3,13 @@
  * Main executable.
  */
 
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "data.h"
 #include "receiver.h"
 #include "rotator.h"
 
@@ -100,8 +102,10 @@ static void parse_args(int argc, char *argv[]) {
  * Clean up before exiting.
  */
 void cleanup() {
+    fprintf(stderr, "Cleaning up...\n");
     rotator_close();
     receiver_close();
+    data_dump(stdout);
 }
 
 /**
@@ -113,12 +117,12 @@ int main(int argc, char *argv[]) {
     rotator_open(config.rot_model, config.rot_file);
     receiver_open(config.receiver_file);
     atexit(cleanup);
+    signal(SIGINT, exit);
 
     while (true) {
         float azimuth, elevation;
         rotator_get_position(&azimuth, &elevation);
-        printf("%f\t%f\t%f\n", azimuth, elevation, receiver_get_strength(0));
-        fflush(stdout);
-        usleep(1e6 / 5);
+        data_add(azimuth, elevation, receiver_get_strength(0));
+        usleep(1e6 / 10);
     }
 }

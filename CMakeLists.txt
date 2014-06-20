@@ -31,6 +31,7 @@ link_directories(
 )
 
 add_executable(marp
+    data.c
     main.c
     receiver.c
     rotator.c
