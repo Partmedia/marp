@@ -3,14 +3,17 @@
  * Main executable.
  */
 
-#include <hamlib/rotator.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
+
+#include "receiver.h"
+#include "rotator.h"
 
 /** Runtime configuration. */
 struct {
-    char *rot_file;
+    char *rot_file, *receiver_file;
     int rot_model;
     int azimuth, azimuth_sweep;
 } config;
@@ -44,7 +47,7 @@ static void print_usage() {
 static void parse_args(int argc, char *argv[]) {
     int flag;
 
-    while ((flag = getopt(argc, argv, "a:d:hm:s:")) != -1) {
+    while ((flag = getopt(argc, argv, "a:d:hm:r:s:")) != -1) {
         switch (flag) {
             case 'a':
                 config.azimuth = atoi(optarg);
@@ -58,6 +61,9 @@ static void parse_args(int argc, char *argv[]) {
                 break;
             case 'm':
                 config.rot_model = atoi(optarg);
+                break;
+            case 'r':
+                config.receiver_file = optarg;
                 break;
             case 's':
                 config.azimuth_sweep = atoi(optarg);
@@ -76,6 +82,10 @@ static void parse_args(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    if (config.receiver_file == NULL) {
+        config.receiver_file = "/dev/ttyU1";
+    }
+
     if (config.azimuth_sweep == 0) {
         config.azimuth_sweep = 360;
     }
@@ -85,25 +95,12 @@ static void parse_args(int argc, char *argv[]) {
  * Main program entry point.
  */
 int main(int argc, char *argv[]) {
-    ROT *rot;
-
     parse_args(argc, argv);
+    //rotator_open(config.rot_model, config.rot_file);
+    receiver_open(config.receiver_file);
 
-    rot = rot_init(config.rot_model);
-    if (rot == NULL) {
-        puts("Unknown rotator model!");
-        exit(EXIT_FAILURE);
-    }
+    printf("Strength: %f\n", receiver_get_strength(0));
 
-    if (config.rot_file != NULL) {
-        strlcpy(rot->state.rotport.pathname, config.rot_file, FILPATHLEN);
-    }
-
-    if (rot_open(rot) != RIG_OK) {
-        puts("Could not open rotator!");
-        exit(EXIT_FAILURE);
-    }
-
-    rot_close(rot);
-    rot_cleanup(rot);
+    //rotator_close();
+    receiver_close();
 }

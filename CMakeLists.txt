@@ -32,6 +32,8 @@ link_directories(
 
 add_executable(marp
     main.c
+    receiver.c
+    rotator.c
 )
 
 target_link_libraries(marp ${HAMLIB_LIBRARIES})
