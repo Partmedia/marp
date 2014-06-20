@@ -3,41 +3,82 @@
  * Main executable.
  */
 
-#include <glib.h>
 #include <hamlib/rotator.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
+/** Runtime configuration. */
 struct {
     char *rot_file;
     int rot_model;
+    int azimuth, azimuth_sweep;
 } config;
 
-/** Command line options, descriptions, and parameters. */
-static GOptionEntry options[] = {
-    { "model", 'm', 0, G_OPTION_ARG_INT, &config.rot_model,
-        "Rotator model", "ID" },
-    { "device", 'd', 0, G_OPTION_ARG_STRING, &config.rot_file,
-        "Rotator device", "DEVICE" },
-    { NULL },
-};
+/**
+ * Print a message stating how to get help.
+ */
+static void print_quickhelp() {
+    fprintf(stderr, "Type 'marp -h' for usage.\n");
+}
 
 /**
- * Parse command-line arguments.
+ * Print usage information.
+ */
+static void print_usage() {
+    printf(
+        "Usage: marp [options]\n"
+        "\n"
+        "Options:\n"
+        "   -a AZIMUTH      Set starting azimuth (default 0).\n"
+        "   -d DEVICE       Set antenna rotator device.\n"
+        "   -h              Display this help message.\n"
+        "   -m ID           Set antenna rotator model.\n"
+        "   -s SWEEP        Set azimuth sweep (default 360).\n"
+    );
+}
+
+/**
+ * Parse command-line arguments and load configuration defaults.
  */
 static void parse_args(int argc, char *argv[]) {
-    GOptionContext *context = g_option_context_new("- MARP");
-    GError *error = NULL;
+    int flag;
 
-    g_option_context_add_main_entries(context, options, NULL);
+    while ((flag = getopt(argc, argv, "a:d:hm:s:")) != -1) {
+        switch (flag) {
+            case 'a':
+                config.azimuth = atoi(optarg);
+                break;
+            case 'd':
+                config.rot_file = optarg;
+                break;
+            case 'h':
+                print_usage();
+                exit(EXIT_SUCCESS);
+                break;
+            case 'm':
+                config.rot_model = atoi(optarg);
+                break;
+            case 's':
+                config.azimuth_sweep = atoi(optarg);
+                break;
+            case '?':
+                print_quickhelp();
+                exit(EXIT_FAILURE);
+                break;
+        }
+    }
 
-    if (!g_option_context_parse(context, &argc, &argv, &error)) {
-        g_print("%s\n", error->message);
-        g_error_free(error);
+    // Load defaults for settings that are not specified.
+    if (config.rot_model == 0) {
+        puts("Please select a rotator model.");
+        print_quickhelp();
         exit(EXIT_FAILURE);
     }
 
-    g_option_context_free(context);
+    if (config.azimuth_sweep == 0) {
+        config.azimuth_sweep = 360;
+    }
 }
 
 /**
@@ -48,27 +89,21 @@ int main(int argc, char *argv[]) {
 
     parse_args(argc, argv);
 
-    if (config.rot_model == 0) {
-        g_message("Please select a rotator model.");
-        exit(EXIT_FAILURE);
-    }
-
     rot = rot_init(config.rot_model);
     if (rot == NULL) {
-        g_critical("Unknown rotator model!");
+        puts("Unknown rotator model!");
         exit(EXIT_FAILURE);
     }
 
     if (config.rot_file != NULL) {
-        g_strlcpy(rot->state.rotport.pathname, config.rot_file, FILPATHLEN);
-        g_free(config.rot_file);
+        strlcpy(rot->state.rotport.pathname, config.rot_file, FILPATHLEN);
     }
 
     if (rot_open(rot) != RIG_OK) {
-        g_critical("Could not open rotator!");
+        puts("Could not open rotator!");
         exit(EXIT_FAILURE);
     }
 
     rot_close(rot);
     rot_cleanup(rot);
-} 
+}
