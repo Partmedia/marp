@@ -1,0 +1,15 @@
+set angles degrees
+set polar
+set grid polar 15.
+unset border
+unset param
+set title "Antenna Pattern"
+set xlabel "Azimuth"
+set ylabel "Strength"
+set style data line
+#set rrange [-200:60]
+set trange [-pi:pi]
+#set xrange [-220:220]
+#set yrange [-220:220]
+unset xtics
+set size square
