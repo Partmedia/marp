@@ -35,12 +35,11 @@ static void print_usage() {
         "Usage: marp [options]\n"
         "\n"
         "Options:\n"
-        "   -a AZIMUTH      Set starting azimuth (default 0).\n"
+        "   -a MIN-MAX      Set azimuth sweep range (default 0-360).\n"
         "   -d DEVICE       Set antenna rotator device.\n"
         "   -h              Display this help message.\n"
         "   -m ID           Set antenna rotator model.\n"
         "   -r DEVICE       Set receiver device.\n"
-        "   -s SWEEP        Set azimuth sweep (default 360).\n"
     );
 }
 
@@ -50,10 +49,26 @@ static void print_usage() {
 static void parse_args(int argc, char *argv[]) {
     int flag;
 
-    while ((flag = getopt(argc, argv, "a:d:hm:r:s:")) != -1) {
+    // Load default settings.
+    config.azimuth = 0;
+    config.azimuth_sweep = 360;
+    config.receiver_file = "/dev/ttyU1";
+    config.rot_file = "/dev/ttyU0";
+
+    while ((flag = getopt(argc, argv, "a:d:hm:r:")) != -1) {
         switch (flag) {
             case 'a':
-                config.azimuth = atoi(optarg);
+                if (sscanf(optarg, "%d,%d", &config.azimuth,
+                            &config.azimuth_sweep) != 2) {
+                    print_quickhelp();
+                    exit(EXIT_FAILURE);
+                }
+
+                if (config.azimuth < 0 || config.azimuth_sweep > 360) {
+                    fprintf(stderr, "Invalid azimuth sweep range\n");
+                    print_quickhelp();
+                    exit(EXIT_FAILURE);
+                }
                 break;
             case 'd':
                 config.rot_file = optarg;
@@ -68,9 +83,6 @@ static void parse_args(int argc, char *argv[]) {
             case 'r':
                 config.receiver_file = optarg;
                 break;
-            case 's':
-                config.azimuth_sweep = atoi(optarg);
-                break;
             case '?':
                 print_quickhelp();
                 exit(EXIT_FAILURE);
@@ -78,23 +90,11 @@ static void parse_args(int argc, char *argv[]) {
         }
     }
 
-    // Load defaults for settings that are not specified.
+    // Complain about required settings that are not specified.
     if (config.rot_model == 0) {
         puts("Please select a rotator model.");
         print_quickhelp();
         exit(EXIT_FAILURE);
-    }
-
-    if (config.rot_file == NULL) {
-        config.rot_file = "/dev/ttyU0";
-    }
-
-    if (config.receiver_file == NULL) {
-        config.receiver_file = "/dev/ttyU1";
-    }
-
-    if (config.azimuth_sweep == 0) {
-        config.azimuth_sweep = 360;
     }
 }
 
