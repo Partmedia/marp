@@ -4,6 +4,9 @@ project(marp C)
 # Set project version information.
 set(VERSION_FULL 0.0.1)
 
+# Set configuration options.
+option(CAPSICUM "Capsicum sandboxing (FreeBSD 10+)" ON)
+
 # Set compiler to use C99 standard.
 set(CMAKE_C_FLAGS "-std=c99")
 
@@ -13,6 +16,13 @@ include(GNUInstallDirs)
 # Look for required dependencies.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(HAMLIB REQUIRED hamlib)
+
+# Check if Capsicum is available.
+include(CheckIncludeFiles)
+
+if (CAPSICUM)
+    check_include_files(sys/capability.h HAVE_CAPSICUM)
+endif()
 
 # Write configuration to header file.
 configure_file(

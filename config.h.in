@@ -2,5 +2,6 @@
 #define _CONFIG_H
 
 #define VERSION_FULL "@VERSION_FULL@"
+#cmakedefine HAVE_CAPSICUM
 
 #endif

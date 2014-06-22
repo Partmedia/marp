@@ -3,11 +3,17 @@
  * Main executable.
  */
 
+#include "config.h"
+
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifdef HAVE_CAPSICUM
+#include <sys/capability.h>
+#endif
 
 #include "data.h"
 #include "receiver.h"
@@ -101,11 +107,23 @@ static void parse_args(int argc, char *argv[]) {
 /**
  * Clean up before exiting.
  */
-void cleanup() {
+static void cleanup() {
     fprintf(stderr, "Cleaning up...\n");
     rotator_close();
     receiver_close();
     data_dump(stdout);
+}
+
+/**
+ * Initialize sandboxing using Capsicum.
+ */
+static void init_sandbox() {
+#ifdef HAVE_CAPSICUM
+    if (cap_enter() != 0) {
+        perror("Could not start Capsicum");
+        exit(EXIT_FAILURE);
+    }
+#endif
 }
 
 /**
@@ -116,6 +134,7 @@ int main(int argc, char *argv[]) {
 
     rotator_open(config.rot_model, config.rot_file);
     receiver_open(config.receiver_file);
+    init_sandbox();
     atexit(cleanup);
     signal(SIGINT, exit);
 
