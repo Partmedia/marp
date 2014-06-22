@@ -16,15 +16,11 @@
 #endif
 
 #include "data.h"
+#include "main.h"
 #include "receiver.h"
 #include "rotator.h"
 
-/** Runtime configuration. */
-static struct {
-    char *rot_file, *receiver_file;
-    int rot_model;
-    int azimuth, azimuth_sweep;
-} config;
+config_s config;
 
 /**
  * Print a message stating how to get help.
@@ -38,12 +34,14 @@ static void print_quickhelp() {
  */
 static void print_usage() {
     printf(
-        "Usage: marp [options]\n"
+        "Usage: marp -m ID [options]\n"
+        "       marp -l FILE [options]\n"
         "\n"
         "Options:\n"
         "   -a MIN-MAX      Set azimuth sweep range (default 0-360).\n"
         "   -d DEVICE       Set antenna rotator device.\n"
         "   -h              Display this help message.\n"
+        "   -l FILE         Load recorded data from a file.\n"
         "   -m ID           Set antenna rotator model.\n"
         "   -r DEVICE       Set receiver device.\n"
     );
@@ -61,7 +59,7 @@ static void parse_args(int argc, char *argv[]) {
     config.receiver_file = "/dev/ttyU1";
     config.rot_file = "/dev/ttyU0";
 
-    while ((flag = getopt(argc, argv, "a:d:hm:r:")) != -1) {
+    while ((flag = getopt(argc, argv, "a:d:hl:m:r:")) != -1) {
         switch (flag) {
             case 'a':
                 if (sscanf(optarg, "%d,%d", &config.azimuth,
@@ -83,6 +81,9 @@ static void parse_args(int argc, char *argv[]) {
                 print_usage();
                 exit(EXIT_SUCCESS);
                 break;
+            case 'l':
+                config.load_file = optarg;
+                break;
             case 'm':
                 config.rot_model = atoi(optarg);
                 break;
@@ -96,9 +97,9 @@ static void parse_args(int argc, char *argv[]) {
         }
     }
 
-    // Complain about required settings that are not specified.
-    if (config.rot_model == 0) {
-        puts("Please select a rotator model.");
+    // Complain about required options that are not specified.
+    if (config.rot_model == 0 && config.load_file == NULL) {
+        fprintf(stderr, "You must specify one of '-m' or '-l'.\n");
         print_quickhelp();
         exit(EXIT_FAILURE);
     }
@@ -111,7 +112,7 @@ static void cleanup() {
     fprintf(stderr, "Cleaning up...\n");
     rotator_close();
     receiver_close();
-    data_dump(stdout);
+    data_dump();
 }
 
 /**
@@ -132,16 +133,30 @@ static void init_sandbox() {
 int main(int argc, char *argv[]) {
     parse_args(argc, argv);
 
-    rotator_open(config.rot_model, config.rot_file);
-    receiver_open(config.receiver_file);
-    init_sandbox();
-    atexit(cleanup);
-    signal(SIGINT, exit);
+    if (config.load_file != NULL) {
+        FILE *data_file = fopen(config.load_file, "r");
+        if (data_file == NULL) {
+            perror("Could not load data file");
+            exit(EXIT_FAILURE);
+        }
 
-    while (true) {
-        float azimuth, elevation;
-        rotator_get_position(&azimuth, &elevation);
-        data_add(azimuth, elevation, receiver_get_strength(0));
-        usleep(1e6 / 10);
+        init_sandbox();
+        data_load(data_file);
+        fclose(data_file);
+        data_dump();
+    } else {
+        rotator_open(config.rot_model, config.rot_file);
+        receiver_open(config.receiver_file);
+        init_sandbox();
+        atexit(cleanup);
+        signal(SIGINT, exit);
+        data_init();
+
+        while (true) {
+            float azimuth, elevation;
+            rotator_get_position(&azimuth, &elevation);
+            data_record(azimuth, elevation, receiver_get_strength(0));
+            usleep(1e6 / 10);
+        }
     }
 }

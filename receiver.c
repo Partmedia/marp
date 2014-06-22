@@ -14,7 +14,7 @@
 
 #include "receiver.h" 
 
-int fd;
+static int fd;
 
 /**
  * Open receiver interface. This function exits on error.
