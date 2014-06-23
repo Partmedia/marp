@@ -11,8 +11,7 @@ Rotators
 
 Receivers
 ---------
- - GNURadio
- - Hamlib
+ - Kenwood TS-2000
 
 Acknowledgements
 ----------------

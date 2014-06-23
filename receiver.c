@@ -1,6 +1,6 @@
 /**
  * @file
- * Receiver control interface.
+ * Receiver controller for TS-2000.
  */
 
 #include <assert.h>

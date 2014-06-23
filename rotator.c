@@ -1,6 +1,6 @@
 /**
  * @file
- * Rotator control interface.
+ * Rotator controller for Hamlib.
  */
 
 #include <hamlib/rotator.h>
