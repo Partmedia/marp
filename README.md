@@ -5,12 +5,12 @@ several antenna rotators and radio receivers.
 
 MARP is free software released under the MIT License.
 
-Rotators
---------
+Supported Hardware
+------------------
+### Rotators ###
  - Hamlib
 
-Receivers
----------
+### Receivers ###
  - Kenwood TS-2000
 
 Acknowledgements
