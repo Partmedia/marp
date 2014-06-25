@@ -51,6 +51,12 @@ static void data_add(float azimuth, float elevation, float strength) {
     const int azimuth_rnd = (int)roundf(azimuth);
     const int elevation_rnd = (int)roundf(elevation);
 
+    // Hack-ish solution to prevent out-of-bound writes.
+    if (azimuth_rnd < 0 || azimuth_rnd > 360) {
+        fprintf(stderr, "Data with azimuth of %f!\n", azimuth);
+        return;
+    }
+
     // Record the maximum signal strength at a given orientation.
     if (max_strength[azimuth_rnd] < strength) {
         max_strength[azimuth_rnd] = strength;
