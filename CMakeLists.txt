@@ -22,6 +22,8 @@ include(CheckIncludeFiles)
 
 if (CAPSICUM)
     check_include_files(sys/capability.h HAVE_CAPSICUM)
+else()
+    set(HAVE_CAPSICUM FALSE)
 endif()
 
 # Write configuration to header file.
