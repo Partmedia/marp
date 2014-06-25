@@ -77,6 +77,14 @@ void data_load(FILE *file) {
 }
 
 /**
+ * Record future entries in a new data set with the given name.
+ */
+void data_addset(const char *name) {
+    fprintf(log_file, "# %s\n", name);
+    fflush(log_file);
+}
+
+/**
  * Log and process a data point from a live recording session.
  */
 void data_record(float azimuth, float elevation, float strength) {

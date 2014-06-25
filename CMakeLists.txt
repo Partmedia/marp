@@ -45,6 +45,8 @@ add_executable(marp
     main.c
     receiver.c
     rotator.c
+    source_manual.c
+    tests.c
 )
 
 target_link_libraries(marp ${HAMLIB_LIBRARIES})

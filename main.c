@@ -19,6 +19,7 @@
 #include "main.h"
 #include "receiver.h"
 #include "rotator.h"
+#include "tests.h"
 
 config_s config;
 
@@ -157,12 +158,6 @@ int main(int argc, char *argv[]) {
         init_sandbox();
         atexit(cleanup);
         signal(SIGINT, exit);
-
-        while (true) {
-            float azimuth, elevation;
-            rotator_get_position(&azimuth, &elevation);
-            data_record(azimuth, elevation, receiver_get_strength(0));
-            usleep(1e6 / 10);
-        }
+        tests_run();
     }
 }
