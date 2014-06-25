@@ -44,6 +44,7 @@ static void print_usage() {
         "   -l FILE         Load recorded data from a file.\n"
         "   -m ID           Set antenna rotator model.\n"
         "   -r DEVICE       Set receiver device.\n"
+        "   -w FILE         Write data log to a file.\n"
     );
 }
 
@@ -58,8 +59,9 @@ static void parse_args(int argc, char *argv[]) {
     config.azimuth_sweep = 360;
     config.receiver_file = "/dev/ttyU1";
     config.rot_file = "/dev/ttyU0";
+    config.write_file = "data.log";
 
-    while ((flag = getopt(argc, argv, "a:d:hl:m:r:")) != -1) {
+    while ((flag = getopt(argc, argv, "a:d:hl:m:r:w:")) != -1) {
         switch (flag) {
             case 'a':
                 if (sscanf(optarg, "%d,%d", &config.azimuth,
@@ -89,6 +91,9 @@ static void parse_args(int argc, char *argv[]) {
                 break;
             case 'r':
                 config.receiver_file = optarg;
+                break;
+            case 'w':
+                config.write_file = optarg;
                 break;
             case '?':
                 print_quickhelp();
@@ -131,6 +136,7 @@ static void init_sandbox() {
  * Main program entry point.
  */
 int main(int argc, char *argv[]) {
+    fprintf(stderr, "MARP " VERSION_FULL "\n");
     parse_args(argc, argv);
 
     if (config.load_file != NULL) {
@@ -145,12 +151,12 @@ int main(int argc, char *argv[]) {
         fclose(data_file);
         data_dump();
     } else {
+        data_init();
         rotator_open(config.rot_model, config.rot_file);
         receiver_open(config.receiver_file);
         init_sandbox();
         atexit(cleanup);
         signal(SIGINT, exit);
-        data_init();
 
         while (true) {
             float azimuth, elevation;

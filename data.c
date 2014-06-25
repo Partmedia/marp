@@ -3,11 +3,14 @@
  * Antenna data processor.
  */
 
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "data.h"
+#include "main.h"
 
 /** Data log. */
 static FILE *log_file;
@@ -33,13 +36,15 @@ static void data_cleanup() {
  * when recording live data.
  */
 void data_init() {
-    log_file = fopen("data.log", "wx");
+    log_file = fopen(config.write_file, "wx");
     if (log_file == NULL) {
-        perror("Could not open log file");
+        fprintf(stderr, "Could not create data log '%s': %s\n",
+                config.write_file, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     atexit(data_cleanup);
+    fprintf(stderr, "Logging data to '%s'\n", config.write_file);
 }
 
 static void data_add(float azimuth, float elevation, float strength) {
