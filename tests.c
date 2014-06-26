@@ -25,8 +25,10 @@ static void steer_and_collect(int target) {
     fprintf(stderr, "Rotating to %d...\n", target);
 
     do {
-        rotator_get_position(&azimuth, &elevation);
-        data_record(azimuth, elevation, receiver_get_strength(0));
+        if (rotator_get_position(&azimuth, &elevation)) {
+            data_record(azimuth, elevation, receiver_get_strength(0));
+        }
+
         usleep(1e6 / 10);
     } while (fabs(azimuth - target) > 5);
 }

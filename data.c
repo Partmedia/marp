@@ -1,8 +1,9 @@
 /**
  * @file
- * Antenna data processor.
+ * Data implementation using flat, tab-separated plain text files
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
@@ -20,6 +21,9 @@ static const char *format = "%f\t%f\t%f\n";
 
 static float max_strength[360];
 
+/**
+ * Translate a compass angle to an angle on a polar plot.
+ */
 static int data_translate(int angle) {
     return 90 - angle;
 }
@@ -33,7 +37,7 @@ static void data_cleanup() {
 
 /**
  * Initialize data collection and processing module. Use this function only
- * when recording live data.
+ * when recording live data. This function exits on error.
  */
 void data_init() {
     log_file = fopen(config.write_file, "wx");
@@ -47,15 +51,15 @@ void data_init() {
     fprintf(stderr, "Logging data to '%s'\n", config.write_file);
 }
 
+/**
+ * Add a single data point to the current data set. The caller should have
+ * already performed sanity checking on the data.
+ */
 static void data_add(float azimuth, float elevation, float strength) {
     const int azimuth_rnd = (int)roundf(azimuth);
     const int elevation_rnd = (int)roundf(elevation);
 
-    // Hack-ish solution to prevent out-of-bound writes.
-    if (azimuth_rnd < 0 || azimuth_rnd > 360) {
-        fprintf(stderr, "Data with azimuth of %f!\n", azimuth);
-        return;
-    }
+    assert(azimuth_rnd >= 0 && azimuth_rnd < 360);
 
     // Record the maximum signal strength at a given orientation.
     if (max_strength[azimuth_rnd] < strength) {
@@ -83,10 +87,11 @@ void data_load(FILE *file) {
 }
 
 /**
- * Record future entries in a new data set with the given name.
+ * Record future entries in a new data set with the given name. The name must
+ * not contain any whitespace.
  */
 void data_addset(const char *name) {
-    fprintf(log_file, "# %s\n", name);
+    fprintf(log_file, "# @set %s\n", name);
     fflush(log_file);
 }
 

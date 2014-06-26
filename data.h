@@ -1,6 +1,6 @@
 /**
  * @file
- * Data collection and processing module.
+ * Data collection, processing, and storage interface
  */
 
 #ifndef _DATA_H

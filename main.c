@@ -39,7 +39,7 @@ static void print_usage() {
         "       marp -l FILE [options]\n"
         "\n"
         "Options:\n"
-        "   -a MIN-MAX      Set azimuth sweep range (default 0-360).\n"
+        "   -a MIN-MAX      Set azimuth sweep range (default 0-359).\n"
         "   -d DEVICE       Set antenna rotator device.\n"
         "   -h              Display this help message.\n"
         "   -l FILE         Load recorded data from a file.\n"
@@ -57,7 +57,7 @@ static void parse_args(int argc, char *argv[]) {
 
     // Load default settings.
     config.azimuth = 0;
-    config.azimuth_sweep = 360;
+    config.azimuth_sweep = 359;
     config.receiver_file = "/dev/ttyU1";
     config.rot_file = "/dev/ttyU0";
     config.write_file = "data.log";
