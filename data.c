@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,7 +20,11 @@ static FILE *log_file;
 /** Data format. */
 static const char *format = "%f\t%f\t%f\n";
 
-static float max_strength[360];
+/** Current data set for holding temporary data. */
+static struct {
+    float max_strength[360];
+    bool dirty;
+} set;
 
 /**
  * Translate a compass angle to an angle on a polar plot.
@@ -59,11 +64,12 @@ static void data_add(float azimuth, float elevation, float strength) {
     const int azimuth_rnd = (int)roundf(azimuth);
     const int elevation_rnd = (int)roundf(elevation);
 
+    assert(set.dirty);
     assert(azimuth_rnd >= 0 && azimuth_rnd < 360);
 
     // Record the maximum signal strength at a given orientation.
-    if (max_strength[azimuth_rnd] < strength) {
-        max_strength[azimuth_rnd] = strength;
+    if (set.max_strength[azimuth_rnd] < strength) {
+        set.max_strength[azimuth_rnd] = strength;
     }
 }
 
@@ -91,8 +97,14 @@ void data_load(FILE *file) {
  * not contain any whitespace.
  */
 void data_addset(const char *name) {
+    if (set.dirty) {
+        fprintf(stderr, "Data set added with old contents still there!\n");
+        abort();
+    }
+
     fprintf(log_file, "# @set %s\n", name);
     fflush(log_file);
+    set.dirty = true;
 }
 
 /**
@@ -106,12 +118,19 @@ void data_record(float azimuth, float elevation, float strength) {
     data_add(azimuth, elevation, strength);
 }
 
+/**
+ * Dump the contents of the current data set. When finished, clear the current
+ * data set from memory. Always call this function before adding a new data
+ * set and recording data to it.
+ */
 void data_dump() {
     for (int i = 0; i < 360; i++) {
-        if (max_strength[i] != 0) {
-            printf("%d\t%f\n", data_translate(i), max_strength[i]);
+        if (set.max_strength[i] != 0) {
+            printf("%d\t%f\n", data_translate(i), set.max_strength[i]);
+            set.max_strength[i] = 0;
         }
     }
 
     fflush(stdout);
+    set.dirty = false;
 }

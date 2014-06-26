@@ -57,6 +57,7 @@ static void bg_scan() {
     source_off();
     data_addset("bg_scan");
     pan_scan();
+    data_dump();
 }
 
 /**
@@ -67,6 +68,7 @@ static void ant_scan() {
     source_on();
     data_addset("ant_scan");
     pan_scan();
+    data_dump();
 }
 
 /**
