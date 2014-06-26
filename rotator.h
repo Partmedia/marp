@@ -6,6 +6,8 @@
 #ifndef _ROTATOR_H
 #define _ROTATOR_H
 
+#include <stdbool.h>
+
 void rotator_close(void);
 bool rotator_get_position(float *azimuth, float *elevation);
 void rotator_open(int rot_model, const char *rot_file);

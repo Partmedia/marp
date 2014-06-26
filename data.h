@@ -6,6 +6,8 @@
 #ifndef _DATA_H
 #define _DATA_H
 
+#include <stdio.h>
+
 void data_addset(const char *name);
 void data_dump(void);
 void data_init(void);
