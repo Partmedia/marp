@@ -13,16 +13,17 @@
 
 #include "data.h"
 #include "main.h"
+#include "receiver.h"
 
 /** Data log. */
 static FILE *log_file;
 
 /** Data format. */
-static const char *format = "%f\t%f\t%f\n";
+static const char *format = "%f\t%f\t%d\n";
 
 /** Current data set for holding temporary data. */
 static struct {
-    float max_strength[360];
+    int max_strength[360];
     bool dirty;
 } set;
 
@@ -60,7 +61,7 @@ void data_init() {
  * Add a single data point to the current data set. The caller should have
  * already performed sanity checking on the data.
  */
-static void data_add(float azimuth, float elevation, float strength) {
+static void data_add(float azimuth, float elevation, int strength) {
     const int azimuth_rnd = (int)roundf(azimuth);
     const int elevation_rnd = (int)roundf(elevation);
 
@@ -110,7 +111,7 @@ void data_addset(const char *name) {
 /**
  * Log and process a data point from a live recording session.
  */
-void data_record(float azimuth, float elevation, float strength) {
+void data_record(float azimuth, float elevation, int strength) {
     // Write a copy of all data to the log.
     fprintf(log_file, format, azimuth, elevation, strength);
     fflush(log_file);
@@ -126,7 +127,8 @@ void data_record(float azimuth, float elevation, float strength) {
 void data_dump() {
     for (int i = 0; i < 360; i++) {
         if (set.max_strength[i] != 0) {
-            printf("%d\t%f\n", data_translate(i), set.max_strength[i]);
+            printf("%d\t%f\n", data_translate(i),
+                    receiver_to_decibels(set.max_strength[i]));
             set.max_strength[i] = 0;
         }
     }

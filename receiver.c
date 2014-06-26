@@ -12,6 +12,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "main.h"
 #include "receiver.h" 
 
 static int fd;
@@ -51,9 +52,8 @@ void receiver_open(const char *device) {
     tcsetattr(fd, TCSANOW, &options);
 }
 
-float receiver_get_strength(int unit) {
+int receiver_get_strength(int unit) {
     char buf[8 + 1];
-    int value;
 
     assert(unit >= 0 && unit < 4);
 
@@ -71,9 +71,11 @@ float receiver_get_strength(int unit) {
     }
 
     buf[sizeof(buf) - 1] = '\0';
-    value = atoi(&buf[3]);
+    return atoi(&buf[3]);
+}
 
-    if (unit == 0 || unit == 2) {
+float receiver_to_decibels(int value) {
+    if (config.rec_unit == 0 || config.rec_unit == 2) {
         // Main transceiver values range from 0000 to 0030.
         return value / 30.0;
     } else {

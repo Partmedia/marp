@@ -57,8 +57,9 @@ static void parse_args(int argc, char *argv[]) {
     // Load default settings.
     config.azimuth = 0;
     config.azimuth_sweep = 359;
-    config.receiver_file = "/dev/ttyU1";
     config.rot_file = "/dev/ttyU0";
+    config.receiver_file = "/dev/ttyU1";
+    config.rec_unit = 0;
     config.write_file = "data.log";
 
     while ((flag = getopt(argc, argv, "a:d:hl:m:r:w:")) != -1) {

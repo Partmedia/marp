@@ -12,6 +12,6 @@ void data_addset(const char *name);
 void data_dump(void);
 void data_init(void);
 void data_load(FILE *file);
-void data_record(float azimuth, float elevation, float strength);
+void data_record(float azimuth, float elevation, int strength);
 
 #endif

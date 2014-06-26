@@ -12,7 +12,7 @@
  */
 typedef struct {
     char *rot_file, *receiver_file;
-    int rot_model;
+    int rot_model, rec_unit;
     int azimuth, azimuth_sweep;
     char *load_file, *write_file;
 } config_s;

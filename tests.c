@@ -25,7 +25,8 @@ static void steer_and_collect(int target) {
 
     do {
         if (rotator_get_position(&azimuth, &elevation)) {
-            data_record(azimuth, elevation, receiver_get_strength(0));
+            data_record(azimuth, elevation,
+                    receiver_get_strength(config.rec_unit));
         }
 
         usleep(1e6 / 10);
