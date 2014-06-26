@@ -66,7 +66,11 @@ static void data_add(float azimuth, float elevation, int strength) {
     const int elevation_rnd = (int)roundf(elevation);
 
     assert(set.dirty);
-    assert(azimuth_rnd >= 0 && azimuth_rnd < 360);
+
+    // Ignore data points that are out of bounds.
+    if (azimuth_rnd < 0 || azimuth_rnd >= 360) {
+        return;
+    }
 
     // Record the maximum signal strength at a given orientation.
     if (set.max_strength[azimuth_rnd] < strength) {
