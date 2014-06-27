@@ -150,7 +150,6 @@ int main(int argc, char *argv[]) {
         init_sandbox();
         data_load(data_file);
         fclose(data_file);
-        data_dump();
     } else {
         data_init();
         rotator_open(config.rot_model, config.rot_file);

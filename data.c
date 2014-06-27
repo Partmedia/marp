@@ -82,19 +82,31 @@ static void data_add(float azimuth, float elevation, int strength) {
  * Load recorded data from a file.
  */
 void data_load(FILE *file) {
-    float azimuth, elevation, strength;
-    int retcode, line = 1;
+    float azimuth, elevation;
+    int line = 1, strength;
+    char buf[64];
 
-    while ((retcode = fscanf(file, format, &azimuth, &elevation, &strength))
-            != EOF) {
-        if (retcode != 3) {
-            fprintf(stderr, "Data file format error on line %d\n", line);
-            exit(EXIT_FAILURE);
+    while (fgets(buf, sizeof(buf), file) != NULL) {
+        if (buf[0] == '#') {
+            if (sscanf(buf, "# @set %s\n", buf) == 1) {
+                // Dump out the previous set, start anew, and mark it dirty.
+                data_dump();
+                set.dirty = true;
+            }
+        } else {
+            if (sscanf(buf, format, &azimuth, &elevation, &strength) != 3) {
+                fprintf(stderr, "Data file format error on line %d\n", line);
+                exit(EXIT_FAILURE);
+            }
+
+            data_add(azimuth, elevation, strength);
         }
 
-        data_add(azimuth, elevation, strength);
         line++;
     }
+
+    // Dump out whatever data was left in the last set.
+    data_dump();
 }
 
 /**
