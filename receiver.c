@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <hamlib/rig.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +16,15 @@
 #include "main.h"
 #include "receiver.h" 
 
+/** TS-2000 calibration data from Hamlib. */
+static const cal_table_t str_cal = {9,
+    { {0x00, -54}, {0x03, -48}, {0x06, -36}, {0x09, -24}, {0x0C, -12},
+    {0x0F, 0}, {0x14, 20}, {0x19, 40}, {0x1E, 60} }
+};
 static int fd;
+
+/** Convert raw S-meter data to a calibrated value. */
+extern HAMLIB_EXPORT(float) rig_raw2val(int rawval, const cal_table_t *cal);
 
 /**
  * Open receiver interface. This function exits on error.
@@ -77,7 +86,7 @@ int receiver_get_strength(int unit) {
 float receiver_to_decibels(int value) {
     if (config.rec_unit == 0 || config.rec_unit == 2) {
         // Main transceiver values range from 0000 to 0030.
-        return value / 30.0;
+        return rig_raw2val(value * 3.6 - 54, &str_cal);
     } else {
         // Sub transceiver values range from 0000 to 0015.
         return value / 15.0;
