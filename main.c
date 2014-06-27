@@ -137,7 +137,6 @@ static void init_sandbox() {
  * Main program entry point.
  */
 int main(int argc, char *argv[]) {
-    fprintf(stderr, "MARP " VERSION_FULL "\n");
     parse_args(argc, argv);
 
     if (config.load_file != NULL) {
