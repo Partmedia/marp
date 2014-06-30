@@ -22,6 +22,7 @@
 static void steer_and_collect(int target) {
     float azimuth, elevation;
     fprintf(stderr, "Rotating to %d...\n", target);
+    rotator_set_position(target, 0);
 
     do {
         if (rotator_get_position(&azimuth, &elevation)) {
