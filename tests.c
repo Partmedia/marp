@@ -28,9 +28,7 @@ static void steer_and_collect(int target) {
         if (rotator_get_position(&azimuth, &elevation)) {
             data_record(azimuth, elevation, receiver_get_strength());
         }
-
-        usleep(1e6 / 10);
-    } while (fabs(azimuth - target) > 5);
+    } while (fabs(azimuth - target) > 1);
 }
 
 /**
