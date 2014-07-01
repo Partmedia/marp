@@ -11,8 +11,8 @@
  * Container for runtime configuration.
  */
 typedef struct {
-    char *rot_file, *receiver_file;
-    int rot_model, rec_unit;
+    char *rot_file, *rig_file;
+    int rot_model, rig_model;
     int azimuth, azimuth_sweep;
     char *load_file, *write_file;
 } config_s;

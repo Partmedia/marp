@@ -7,11 +7,8 @@ MARP is free software released under the MIT License.
 
 Supported Hardware
 ------------------
-### Rotators ###
- - Hamlib
-
-### Receivers ###
- - Kenwood TS-2000
+MARP uses Hamlib to control devices. Please see the list of hardware
+supported by Hamlib.
 
 Acknowledgements
 ----------------

@@ -4,8 +4,11 @@ set ylabel "Strength (dB)"
 set angles degrees
 set grid polar 15
 set polar
+set rrange [-54:60]
 set size square
 set style data line
 
 unset border
+unset key
 unset xtics
+unset ytics

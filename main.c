@@ -58,8 +58,8 @@ static void parse_args(int argc, char *argv[]) {
     config.azimuth = 0;
     config.azimuth_sweep = 359;
     config.rot_file = "/dev/ttyU0";
-    config.receiver_file = "/dev/ttyU1";
-    config.rec_unit = 0;
+    config.rig_file = "/dev/ttyU1";
+    config.rig_model = 214;
     config.write_file = "data.log";
 
     while ((flag = getopt(argc, argv, "a:d:hl:m:r:w:")) != -1) {
@@ -91,7 +91,7 @@ static void parse_args(int argc, char *argv[]) {
                 config.rot_model = atoi(optarg);
                 break;
             case 'r':
-                config.receiver_file = optarg;
+                config.rig_file = optarg;
                 break;
             case 'w':
                 config.write_file = optarg;
@@ -150,9 +150,9 @@ int main(int argc, char *argv[]) {
         data_load(data_file);
         fclose(data_file);
     } else {
-        data_init();
         rotator_open(config.rot_model, config.rot_file);
-        receiver_open(config.receiver_file);
+        receiver_open();
+        data_init();
         init_sandbox();
         atexit(cleanup);
         signal(SIGINT, exit);

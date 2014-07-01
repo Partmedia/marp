@@ -24,7 +24,7 @@ static const char *format = "%f\t%f\t%d\n";
 /** Current data set for holding temporary data. */
 static struct {
     int max_strength[360];
-    bool dirty;
+    bool has_data;
 } set;
 
 /**
@@ -55,6 +55,9 @@ void data_init() {
 
     atexit(data_cleanup);
     fprintf(stderr, "Logging data to '%s'\n", config.write_file);
+
+    // Initialize empty data set.
+    data_dump();
 }
 
 /**
@@ -65,7 +68,7 @@ static void data_add(float azimuth, float elevation, int strength) {
     const int azimuth_rnd = (int)roundf(azimuth);
     const int elevation_rnd = (int)roundf(elevation);
 
-    assert(set.dirty);
+    assert(set.has_data);
 
     // Ignore data points that are out of bounds.
     if (azimuth_rnd < 0 || azimuth_rnd >= 360) {
@@ -91,7 +94,7 @@ void data_load(FILE *file) {
             if (sscanf(buf, "# @set %s\n", buf) == 1) {
                 // Dump out the previous set, start anew, and mark it dirty.
                 data_dump();
-                set.dirty = true;
+                set.has_data = true;
             }
         } else {
             if (sscanf(buf, format, &azimuth, &elevation, &strength) != 3) {
@@ -114,14 +117,14 @@ void data_load(FILE *file) {
  * not contain any whitespace.
  */
 void data_addset(const char *name) {
-    if (set.dirty) {
+    if (set.has_data) {
         fprintf(stderr, "Data set added with old contents still there!\n");
         abort();
     }
 
     fprintf(log_file, "# @set %s\n", name);
     fflush(log_file);
-    set.dirty = true;
+    set.has_data = true;
 }
 
 /**
@@ -142,13 +145,15 @@ void data_record(float azimuth, float elevation, int strength) {
  */
 void data_dump() {
     for (int i = 0; i < 360; i++) {
-        if (set.max_strength[i] != 0) {
-            printf("%d\t%f\n", data_translate(i),
-                    receiver_to_decibels(set.max_strength[i]));
-            set.max_strength[i] = 0;
+        if (set.max_strength[i] != -54) {
+            if (set.has_data) {
+                printf("%d\t%d\n", data_translate(i), set.max_strength[i]);
+            }
+
+            set.max_strength[i] = -54;
         }
     }
 
     fflush(stdout);
-    set.dirty = false;
+    set.has_data = false;
 }
