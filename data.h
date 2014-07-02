@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-void data_addset(const char *name);
+void data_addset(const char *format, ...);
 void data_dump(void);
 void data_init(void);
 void data_load(FILE *file);

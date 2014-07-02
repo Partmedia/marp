@@ -63,9 +63,13 @@ static void bg_scan() {
  * Scan data for antenna measurement.
  */
 static void ant_scan() {
+    float azimuth, elevation;
+
     fprintf(stderr, "Starting antenna measurement...\n");
+    fprintf(stderr, "Please manually point AUT directly at source.\n");
     source_on();
-    data_addset("ant_scan");
+    rotator_get_position(&azimuth, &elevation);
+    data_addset("ant_scan %f,%f", azimuth, elevation);
     pan_scan();
     data_dump();
 }

@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -116,13 +117,20 @@ void data_load(FILE *file) {
  * Record future entries in a new data set with the given name. The name must
  * not contain any whitespace.
  */
-void data_addset(const char *name) {
+void data_addset(const char *format, ...) {
+    va_list args;
+
     if (set.has_data) {
         fprintf(stderr, "Data set added with old contents still there!\n");
         abort();
     }
 
-    fprintf(log_file, "# @set %s\n", name);
+    fprintf(log_file, "# @set ");
+    va_start(args, format);
+    vfprintf(log_file, format, args);
+    va_end(args);
+    fprintf(log_file, "\n");
+
     fflush(log_file);
     set.has_data = true;
 }
