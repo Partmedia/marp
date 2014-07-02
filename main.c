@@ -118,7 +118,6 @@ static void cleanup() {
     fprintf(stderr, "Cleaning up...\n");
     rotator_close();
     receiver_close();
-    data_dump();
 }
 
 /**
@@ -139,6 +138,7 @@ static void init_sandbox() {
 int main(int argc, char *argv[]) {
     parse_args(argc, argv);
 
+    // Load data from a file if one is set, otherwise collect new data.
     if (config.load_file != NULL) {
         FILE *data_file = fopen(config.load_file, "r");
         if (data_file == NULL) {

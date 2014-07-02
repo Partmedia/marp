@@ -21,7 +21,7 @@ void rotator_open(int rot_model, const char *rot_file) {
 
     rot = rot_init(rot_model);
     if (rot == NULL) {
-        puts("Unknown rotator model!");
+        fprintf(stderr, "Unknown rotator model!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -30,7 +30,7 @@ void rotator_open(int rot_model, const char *rot_file) {
     }
 
     if (rot_open(rot) != RIG_OK) {
-        puts("Could not open rotator!");
+        fprintf(stderr, "Could not open rotator!\n");
         exit(EXIT_FAILURE);
     }
 }
