@@ -95,6 +95,7 @@ void data_load(FILE *file) {
             if (sscanf(buf, "# @set %s\n", buf) == 1) {
                 // Dump out the previous set, start anew, and mark it dirty.
                 data_dump();
+                printf("# Data Set: %s\n", buf);
                 set.has_data = true;
             }
         } else {
