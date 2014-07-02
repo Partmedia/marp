@@ -4,7 +4,6 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <tgmath.h>
 #include <unistd.h>
 
@@ -15,20 +14,27 @@
 #include "source.h"
 #include "tests.h"
 
+/** Macro for old function call. */
+#define steer_and_collect(target) steer(target, 0, true)
+
 /**
- * Steer the antenna to the given orientation while collecting data. This
- * function blocks until the antenna is facing the right direction.
+ * Steer the antenna to the given orientation with the option of collecting
+ * data. This function blocks until the antenna is facing the target.
  */
-static void steer_and_collect(int target) {
+static void steer(float az_target, float el_target, bool collect) {
     float azimuth, elevation;
-    fprintf(stderr, "Rotating to %d...\n", target);
-    rotator_set_position(target, 0);
+
+    fprintf(stderr, "Rotating to %f, %f...\n", az_target, el_target);
+    rotator_set_position(az_target, el_target);
 
     do {
+        // We need to grab rotator position anyways, so do that first.
         if (rotator_get_position(&azimuth, &elevation)) {
-            data_record(azimuth, elevation, receiver_get_strength());
+            if (collect) {
+                data_record(azimuth, elevation, receiver_get_strength());
+            }
         }
-    } while (fabs(azimuth - target) > 1);
+    } while (fabs(azimuth - az_target) > 1 || fabs(elevation - el_target) > 1);
 }
 
 /**
@@ -39,7 +45,7 @@ static void pan_scan() {
     rotator_get_position(&azimuth, &elevation);
 
     // Figure out which end to start the test at.
-    if (abs(config.azimuth_sweep - azimuth) < abs(config.azimuth - azimuth)) {
+    if (fabs(config.azimuth_sweep - azimuth) < fabs(config.azimuth - azimuth)) {
         steer_and_collect(config.azimuth_sweep);
         steer_and_collect(config.azimuth);
     } else {
