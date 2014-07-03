@@ -14,9 +14,6 @@
 #include "source.h"
 #include "tests.h"
 
-/** Macro for old function call. */
-#define steer_and_collect(target) steer(target, 0, true)
-
 /**
  * Steer the antenna to the given orientation with the option of collecting
  * data. This function blocks until the antenna is facing the target.
@@ -55,12 +52,25 @@ static void pan_scan() {
 
     // Figure out which end to start the test at.
     if (fabs(config.az_max - azimuth) < fabs(config.az_min - azimuth)) {
-        steer_and_collect(config.az_max);
-        steer_and_collect(config.az_min);
+        steer(config.az_max, 0, false);
+        steer(config.az_min, 0, true);
     } else {
-        steer_and_collect(config.az_min);
-        steer_and_collect(config.az_max);
+        steer(config.az_min, 0, false);
+        steer(config.az_max, 0, true);
     }
+}
+
+/**
+ * Record pattern for an antenna on its azimuth and elevation planes.
+ */
+static void scan_planes(int source_az, int source_el) {
+    // Steer to and collect data for azimuth measurement.
+    steer(config.az_min, config.el_min, false);
+    steer(config.az_max, config.el_min, true);
+
+    // Steer to and collect data for elevation measurement.
+    steer(source_az, config.el_max, false);
+    steer(source_az, config.el_min, true);
 }
 
 /**
@@ -85,7 +95,7 @@ static void ant_scan() {
     source_on();
     rotator_get_position(&azimuth, &elevation);
     data_addset("ant_scan %f,%f", azimuth, elevation);
-    pan_scan();
+    scan_planes(azimuth, elevation);
     data_dump();
 }
 
