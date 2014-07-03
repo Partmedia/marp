@@ -22,19 +22,28 @@
  * data. This function blocks until the antenna is facing the target.
  */
 static void steer(float az_target, float el_target, bool collect) {
-    float azimuth, elevation;
-
     fprintf(stderr, "Rotating to %f, %f...\n", az_target, el_target);
     rotator_set_position(az_target, el_target);
 
-    do {
-        // We need to grab rotator position anyways, so do that first.
-        if (rotator_get_position(&azimuth, &elevation)) {
-            if (collect) {
-                data_record(azimuth, elevation, receiver_get_strength());
-            }
+    while (true) {
+        float azimuth, elevation;
+
+        // Check rotator return value.
+        if (rotator_get_position(&azimuth, &elevation) == false) {
+            sleep(3);
+            continue;
         }
-    } while (fabs(azimuth - az_target) > 1 || fabs(elevation - el_target) > 1);
+
+        // Check if we've reached our target.
+        if (fabs(azimuth - az_target) <= 1 &&
+                fabs(elevation - el_target) <= 1) {
+            break;
+        }
+
+        if (collect) {
+            data_record(azimuth, elevation, receiver_get_strength());
+        }
+    }
 }
 
 /**

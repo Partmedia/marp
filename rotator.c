@@ -36,7 +36,8 @@ void rotator_open(int rot_model, const char *rot_file) {
 }
 
 /**
- * Get the current position of the rotator interface.
+ * Get the current position of the rotator interface. On failure, the output
+ * variables are set to zero and thus become invalid.
  * @return True if successful, false otherwise.
  */
 bool rotator_get_position(float *azimuth, float *elevation) {
