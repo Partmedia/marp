@@ -55,23 +55,23 @@ static void parse_args(int argc, char *argv[]) {
     int flag;
 
     // Load default settings.
-    config.azimuth = 0;
-    config.azimuth_sweep = 359;
     config.rot_file = "/dev/ttyU0";
     config.rig_file = "/dev/ttyU1";
     config.rig_model = 214;
+    config.az_min = 0, config.az_max = 359;
+    config.el_min = 0, config.el_max = 180;
     config.write_file = "data.log";
 
     while ((flag = getopt(argc, argv, "a:d:hl:m:r:w:")) != -1) {
         switch (flag) {
             case 'a':
-                if (sscanf(optarg, "%d,%d", &config.azimuth,
-                            &config.azimuth_sweep) != 2) {
+                if (sscanf(optarg, "%d,%d", &config.az_min,
+                            &config.az_max) != 2) {
                     print_quickhelp();
                     exit(EXIT_FAILURE);
                 }
 
-                if (config.azimuth < 0 || config.azimuth_sweep > 360) {
+                if (config.az_min < 0 || config.az_max > 360) {
                     fprintf(stderr, "Invalid azimuth sweep range\n");
                     print_quickhelp();
                     exit(EXIT_FAILURE);

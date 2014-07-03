@@ -54,12 +54,12 @@ static void pan_scan() {
     rotator_get_position(&azimuth, &elevation);
 
     // Figure out which end to start the test at.
-    if (fabs(config.azimuth_sweep - azimuth) < fabs(config.azimuth - azimuth)) {
-        steer_and_collect(config.azimuth_sweep);
-        steer_and_collect(config.azimuth);
+    if (fabs(config.az_max - azimuth) < fabs(config.az_min - azimuth)) {
+        steer_and_collect(config.az_max);
+        steer_and_collect(config.az_min);
     } else {
-        steer_and_collect(config.azimuth);
-        steer_and_collect(config.azimuth_sweep);
+        steer_and_collect(config.az_min);
+        steer_and_collect(config.az_max);
     }
 }
 
