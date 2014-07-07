@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(marp C)
 
 # Set project version information.
-set(VERSION_FULL 0.0.1)
+set(VERSION_FULL 0.1.0)
 
 # Set configuration options.
 option(CAPSICUM "Capsicum sandboxing (FreeBSD 10+)" ON)
