@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "main.h"
 #include "receiver.h"
@@ -36,6 +37,37 @@ void receiver_open() {
     }
 }
 
+/**
+ * Send a message from the receiver using Morse code.
+ */
+bool receiver_send_morse(const char *message) {
+    const value_t speed = {20}, pitch = {700};
+    const double freq = 146.42;
+    bool retvalue;
+
+    // Switch to VFO B, change mode to CW, and tune to control frequency.
+    rig_set_vfo(rig, RIG_VFO_B);
+    rig_set_mode(rig, RIG_VFO_B, RIG_MODE_CW,
+            rig_passband_normal(rig, RIG_MODE_CW));
+    rig_set_freq(rig, RIG_VFO_B, freq);
+
+    // Set CW options.
+    rig_set_func(rig, RIG_VFO_B, RIG_FUNC_FBKIN, true);
+    rig_set_level(rig, RIG_VFO_B, RIG_LEVEL_KEYSPD, speed);
+    rig_set_level(rig, RIG_VFO_B, RIG_LEVEL_CWPITCH, pitch);
+
+    // Send message and wait for 10 seconds.
+    retvalue = rig_send_morse(rig, RIG_VFO_B, message) == RIG_OK;
+    sleep(15);
+
+    // Switch back to VFO A.
+    rig_set_vfo(rig, RIG_VFO_A);
+    return retvalue;
+}
+
+/**
+ * Get the calibrated signal strength reported by the receiver.
+ */
 int receiver_get_strength() {
     static int strength;
 

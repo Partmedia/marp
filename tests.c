@@ -21,7 +21,7 @@
 static void steer(float az_target, float el_target, bool collect) {
     const int angle_threshold = 3;
 
-    fprintf(stderr, "Rotating to %f, %f...\n", az_target, el_target);
+    fprintf(stderr, "===> Rotating to %f, %f...\n", az_target, el_target);
     rotator_set_position(az_target, el_target);
 
     while (true) {
@@ -46,9 +46,9 @@ static void steer(float az_target, float el_target, bool collect) {
 }
 
 /**
- * Rotate antenna on its azimuth axis and record data.
+ * Record pattern for an antenna on its azimuth plane.
  */
-static void pan_scan() {
+static void scan_pan_azimuth() {
     float azimuth, elevation;
     rotator_get_position(&azimuth, &elevation);
 
@@ -71,40 +71,29 @@ static void scan_planes(int source_az, int source_el) {
     steer(config.az_max, config.el_min, true);
 
     // Steer to and collect data for elevation measurement.
-    steer(source_az, config.el_max, false);
+    steer(source_az, config.el_max - 90, false);
     steer(source_az, config.el_min, true);
-}
-
-/**
- * Scan background noise.
- */
-static void bg_scan() {
-    fprintf(stderr, "Starting background noise scan...\n");
-    source_off();
-    data_addset("bg_scan");
-    pan_scan();
-    data_dump();
 }
 
 /**
  * Scan data for antenna measurement.
  */
-static void ant_scan() {
-    float azimuth, elevation;
+static void ant_scan(int start_az, int start_el) {
+    // Rotate antenna to starting position.
+    steer(start_az, start_el, false);
+    data_addset("ant_scan %d,%d", start_az, start_el);
 
-    fprintf(stderr, "Starting antenna measurement...\n");
-    fprintf(stderr, "Please manually point AUT directly at source.\n");
+    fprintf(stderr, "===>>> Starting antenna measurement...\n");
     source_on();
-    rotator_get_position(&azimuth, &elevation);
-    data_addset("ant_scan %f,%f", azimuth, elevation);
-    scan_planes(azimuth, elevation);
+    scan_planes(start_az, start_el);
+    source_off();
     data_dump();
+    fprintf(stderr, "===>>> Data collection finished successfully.\n");
 }
 
 /**
  * Run the whole suite of tests for an antenna.
  */
 void tests_run() {
-    bg_scan();
-    ant_scan();
+    ant_scan(90, 0);
 }

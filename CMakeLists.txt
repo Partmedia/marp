@@ -47,7 +47,7 @@ add_executable(marp
     main.c
     receiver.c
     rotator.c
-    source_manual.c
+    source.c
     tests.c
 )
 
