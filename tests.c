@@ -93,11 +93,8 @@ static void scan_planes(int source_az, int source_el) {
  * Scan data for antenna measurement.
  */
 static void ant_scan(int start_az, int start_el) {
-    // Rotate antenna to starting position.
-    steer(start_az, start_el, false);
-    data_addset("ant_scan %d,%d", start_az, start_el);
-
     fprintf(stderr, "===>>> Starting antenna measurement...\n");
+    data_addset("ant_scan %d,%d", start_az, start_el);
     source_on();
     scan_planes(start_az, start_el);
     source_off();
