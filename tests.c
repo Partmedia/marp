@@ -25,7 +25,8 @@ static void steer(float az_target, float el_target, bool collect) {
     struct timespec time_start;
     int errors = 0;
 
-    fprintf(stderr, "===> Rotating to %f, %f...\n", az_target, el_target);
+    fprintf(stderr, "===> %s to %f, %f...\n",
+            collect ? "Collecting" : "Rotating", az_target, el_target);
     rotator_set_position(az_target, el_target);
     clock_gettime(CLOCK_MONOTONIC, &time_start);
 
