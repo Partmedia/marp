@@ -4,7 +4,9 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <tgmath.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "data.h"
@@ -20,12 +22,22 @@
  */
 static void steer(float az_target, float el_target, bool collect) {
     const int angle_threshold = 3;
+    struct timespec time_start;
 
     fprintf(stderr, "===> Rotating to %f, %f...\n", az_target, el_target);
     rotator_set_position(az_target, el_target);
+    clock_gettime(CLOCK_MONOTONIC, &time_start);
 
     while (true) {
+        struct timespec time_current;
         float azimuth, elevation;
+
+        // If too much time has elapsed, time out and exit.
+        clock_gettime(CLOCK_MONOTONIC, &time_current);
+        if (time_current.tv_sec - time_start.tv_sec > 60 + 10) {
+            fprintf(stderr, "Timeout: rotator is taking too long\n");
+            exit(EXIT_FAILURE);
+        }
 
         // Check rotator return value.
         if (rotator_get_position(&azimuth, &elevation) == false) {
