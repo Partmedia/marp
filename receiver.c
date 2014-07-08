@@ -18,7 +18,7 @@ static RIG *rig;
  * Open receiver interface. This function exits on error.
  */
 void receiver_open() {
-    assert(config.rig_model != 0 && config.rig_file != NULL);
+    assert(config.rig_model != 0);
 
     rig = rig_init(config.rig_model);
     if (rig == NULL) {
@@ -26,7 +26,9 @@ void receiver_open() {
         exit(EXIT_FAILURE);
     }
 
-    strlcpy(rig->state.rigport.pathname, config.rig_file, FILPATHLEN);
+    if (config.rig_file != NULL) {
+        strlcpy(rig->state.rigport.pathname, config.rig_file, FILPATHLEN);
+    }
 
     if (rig_open(rig) != RIG_OK) {
         fprintf(stderr, "Could not open rig!\n");

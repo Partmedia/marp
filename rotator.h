@@ -10,7 +10,7 @@
 
 void rotator_close(void);
 bool rotator_get_position(float *azimuth, float *elevation);
-void rotator_open(int rot_model, const char *rot_file);
+void rotator_open(void);
 bool rotator_set_position(float azimuth, float elevation);
 
 #endif

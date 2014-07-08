@@ -3,12 +3,14 @@
  * Rotator controller for Hamlib.
  */
 
+#include <assert.h>
 #include <hamlib/rotator.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "main.h"
 #include "rotator.h"
 
 static ROT *rot;
@@ -16,17 +18,18 @@ static ROT *rot;
 /**
  * Initialize and open rotator interface. This function exits on error.
  */
-void rotator_open(int rot_model, const char *rot_file) {
+void rotator_open() {
     rig_set_debug(RIG_DEBUG_WARN);
+    assert(config.rot_model != 0);
 
-    rot = rot_init(rot_model);
+    rot = rot_init(config.rot_model);
     if (rot == NULL) {
         fprintf(stderr, "Unknown rotator model!\n");
         exit(EXIT_FAILURE);
     }
 
-    if (rot_file != NULL) {
-        strlcpy(rot->state.rotport.pathname, rot_file, FILPATHLEN);
+    if (config.rot_file != NULL) {
+        strlcpy(rot->state.rotport.pathname, config.rot_file, FILPATHLEN);
     }
 
     if (rot_open(rot) != RIG_OK) {
