@@ -42,14 +42,12 @@ void receiver_open() {
  */
 bool receiver_send_morse(const char *message) {
     const value_t speed = {20}, pitch = {700};
-    const double freq = 146.42;
     bool retvalue;
 
-    // Switch to VFO B, change mode to CW, and tune to control frequency.
+    // Switch to VFO B and change mode to CW.
     rig_set_vfo(rig, RIG_VFO_B);
     rig_set_mode(rig, RIG_VFO_B, RIG_MODE_CW,
             rig_passband_normal(rig, RIG_MODE_CW));
-    rig_set_freq(rig, RIG_VFO_B, freq);
 
     // Set CW options.
     rig_set_func(rig, RIG_VFO_B, RIG_FUNC_FBKIN, true);
