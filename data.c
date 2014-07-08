@@ -137,6 +137,15 @@ void data_addset(const char *format, ...) {
 }
 
 /**
+ * Make an annotation in the current data log. This function should only be
+ * used when recording live data.
+ */
+void data_annotate(const char *message) {
+    fprintf(log_file, "# %s\n", message);
+    fflush(log_file);
+}
+
+/**
  * Log and process a data point from a live recording session.
  */
 void data_record(float azimuth, float elevation, int strength) {

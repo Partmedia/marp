@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 void data_addset(const char *format, ...);
+void data_annotate(const char *message);
 void data_dump(void);
 void data_init(void);
 void data_load(FILE *file);

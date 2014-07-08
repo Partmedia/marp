@@ -36,6 +36,7 @@ static void steer(float az_target, float el_target, bool collect) {
         clock_gettime(CLOCK_MONOTONIC, &time_current);
         if (time_current.tv_sec - time_start.tv_sec > 60 + 10) {
             fprintf(stderr, "Timeout: rotator is taking too long\n");
+            data_annotate("Timeout");
             exit(EXIT_FAILURE);
         }
 
@@ -99,6 +100,7 @@ static void ant_scan(int start_az, int start_el) {
     source_on();
     scan_planes(start_az, start_el);
     source_off();
+    data_annotate("Data collection finished successfully.");
     data_dump();
     fprintf(stderr, "===>>> Data collection finished successfully.\n");
 }
