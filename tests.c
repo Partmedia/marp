@@ -23,6 +23,7 @@
 static void steer(float az_target, float el_target, bool collect) {
     const int angle_threshold = 3;
     struct timespec time_start;
+    int errors = 0;
 
     fprintf(stderr, "===> Rotating to %f, %f...\n", az_target, el_target);
     rotator_set_position(az_target, el_target);
@@ -46,9 +47,9 @@ static void steer(float az_target, float el_target, bool collect) {
             continue;
         }
 
-        // Check if we've reached our target.
-        if (fabs(azimuth - az_target) <= angle_threshold &&
-                fabs(elevation - el_target) <= angle_threshold) {
+        // Break out at the correct position or when error limit exceeded.
+        if (errors > 3 || (fabs(azimuth - az_target) <= angle_threshold &&
+                    fabs(elevation - el_target) <= angle_threshold)) {
             break;
         }
 
