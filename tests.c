@@ -100,7 +100,6 @@ static void ant_scan(int start_az, int start_el) {
     scan_planes(start_az, start_el);
     source_off();
     data_annotate("Data collection finished successfully.");
-    data_dump();
     fprintf(stderr, "===>>> Data collection finished successfully.\n");
 }
 

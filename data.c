@@ -43,8 +43,8 @@ static void data_cleanup() {
 }
 
 /**
- * Initialize data collection and processing module. Use this function only
- * when recording live data. This function exits on error.
+ * Initialize data collection module. Use this function only when recording
+ * live data. This function exits on error.
  */
 void data_init() {
     log_file = fopen(config.write_file, "wx");
@@ -56,9 +56,6 @@ void data_init() {
 
     atexit(data_cleanup);
     fprintf(stderr, "Logging data to '%s'\n", config.write_file);
-
-    // Initialize empty data set.
-    data_dump();
 }
 
 /**
@@ -152,8 +149,6 @@ void data_record(float azimuth, float elevation, int strength) {
     // Write a copy of all data to the log.
     fprintf(log_file, format, azimuth, elevation, strength);
     fflush(log_file);
-
-    data_add(azimuth, elevation, strength);
 }
 
 /**
