@@ -140,10 +140,17 @@ int main(int argc, char *argv[]) {
 
     // Load data from a file if one is set, otherwise collect new data.
     if (config.load_file != NULL) {
-        FILE *data_file = fopen(config.load_file, "r");
-        if (data_file == NULL) {
-            perror("Could not load data file");
-            exit(EXIT_FAILURE);
+        FILE *data_file;
+
+        // Read data from standard input if file is given as '-'.
+        if (*config.load_file == '-') {
+            data_file = stdin;
+        } else {
+            data_file = fopen(config.load_file, "r");
+            if (data_file == NULL) {
+                perror("Could not load data file");
+                exit(EXIT_FAILURE);
+            }
         }
 
         init_sandbox();
