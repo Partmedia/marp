@@ -28,10 +28,12 @@ static struct {
     bool has_data;
 } set;
 
+static void data_pattern_dump(int origin_az);
+
 /**
  * Translate a compass angle to an angle on a polar plot.
  */
-static int data_translate(int angle) {
+static int compass_translate(int angle) {
     return 90 - angle;
 }
 
@@ -83,16 +85,18 @@ static void data_add(float azimuth, float elevation, int strength) {
  * Load recorded data from a file.
  */
 void data_load(FILE *file) {
-    float azimuth, elevation;
-    int line = 1, strength;
     char buf[64];
+    int line = 1, origin_az = 0;
 
     while (fgets(buf, sizeof(buf), file) != NULL) {
+        float azimuth, elevation;
+        int strength;
+
         if (buf[0] == '#') {
-            if (sscanf(buf, "# @set %s\n", buf) == 1) {
+            if (sscanf(buf, "# @set %s %d\n", buf, &origin_az) >= 1) {
                 // Dump out the previous set, start anew, and mark it dirty.
-                data_dump();
-                printf("# Data Set: %s\n", buf);
+                data_pattern_dump(0);
+                printf("# Data Set: %s\tOrigin: %d\n", buf, origin_az);
                 set.has_data = true;
             }
         } else {
@@ -108,7 +112,7 @@ void data_load(FILE *file) {
     }
 
     // Dump out whatever data was left in the last set.
-    data_dump();
+    data_pattern_dump(origin_az);
 }
 
 /**
@@ -156,11 +160,12 @@ void data_record(float azimuth, float elevation, int strength) {
  * data set from memory. Always call this function before adding a new data
  * set and recording data to it.
  */
-void data_dump() {
+static void data_pattern_dump(int origin_az) {
     for (int i = 0; i < 360; i++) {
         if (set.max_strength[i] != -54) {
             if (set.has_data) {
-                printf("%d\t%d\n", data_translate(i), set.max_strength[i]);
+                printf("%d\t%d\n", compass_translate(i - origin_az),
+                        set.max_strength[i]);
             }
 
             set.max_strength[i] = -54;
