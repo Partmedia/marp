@@ -22,11 +22,12 @@ static FILE *log_file;
 /** Data format. */
 static const char *format = "%f\t%f\t%d\n";
 
-/** Current data set for holding temporary data. */
-static struct {
+struct dataset_s {
     int max_strength[360];
-    bool has_data;
-} set;
+};
+
+/** Current data set for holding temporary data. */
+static struct dataset_s set;
 
 static void data_pattern_dump(int origin_az);
 
@@ -35,6 +36,15 @@ static void data_pattern_dump(int origin_az);
  */
 static int compass_translate(int angle) {
     return 90 - angle;
+}
+
+/**
+ * Zero the given data set.
+ */
+static void data_clear(struct dataset_s *set) {
+    for (int i = 0; i < 360; i++) {
+        set->max_strength[i] = -54;
+    }
 }
 
 /**
@@ -68,8 +78,6 @@ static void data_add(float azimuth, float elevation, int strength) {
     const int azimuth_rnd = (int)roundf(azimuth);
     const int elevation_rnd = (int)roundf(elevation);
 
-    assert(set.has_data);
-
     // Ignore data points that are out of bounds.
     if (azimuth_rnd < 0 || azimuth_rnd >= 360) {
         return;
@@ -94,10 +102,9 @@ void data_load(FILE *file) {
 
         if (buf[0] == '#') {
             if (sscanf(buf, "# @set %s %d\n", buf, &origin_az) >= 1) {
-                // Dump out the previous set, start anew, and mark it dirty.
-                data_pattern_dump(0);
+                // Zero out the previous set and start a new one.
+                data_clear(&set);
                 printf("# Data Set: %s\tOrigin: %d\n", buf, origin_az);
-                set.has_data = true;
             }
         } else {
             if (sscanf(buf, format, &azimuth, &elevation, &strength) != 3) {
@@ -111,7 +118,7 @@ void data_load(FILE *file) {
         line++;
     }
 
-    // Dump out whatever data was left in the last set.
+    // Dump the data from the last set. Only the last set is dumped.
     data_pattern_dump(origin_az);
 }
 
@@ -122,11 +129,6 @@ void data_load(FILE *file) {
 void data_addset(const char *format, ...) {
     va_list args;
 
-    if (set.has_data) {
-        fprintf(stderr, "Data set added with old contents still there!\n");
-        abort();
-    }
-
     fprintf(log_file, "# @set ");
     va_start(args, format);
     vfprintf(log_file, format, args);
@@ -134,7 +136,6 @@ void data_addset(const char *format, ...) {
     fprintf(log_file, "\n");
 
     fflush(log_file);
-    set.has_data = true;
 }
 
 /**
@@ -163,15 +164,11 @@ void data_record(float azimuth, float elevation, int strength) {
 static void data_pattern_dump(int origin_az) {
     for (int i = 0; i < 360; i++) {
         if (set.max_strength[i] != -54) {
-            if (set.has_data) {
-                printf("%d\t%d\n", compass_translate(i - origin_az),
-                        set.max_strength[i]);
-            }
-
-            set.max_strength[i] = -54;
+            printf("%d\t%d\n", compass_translate(i - origin_az),
+                    set.max_strength[i]);
         }
     }
 
     fflush(stdout);
-    set.has_data = false;
+    data_clear(&set);
 }
