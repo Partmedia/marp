@@ -81,12 +81,16 @@ static void scan_pan_azimuth() {
  * Record pattern for an antenna on its azimuth and elevation planes.
  */
 static void scan_planes(int source_az, int source_el) {
+    // Steer to starting position.
+    steer(source_az, config.el_min, false);
+
     // Steer to and collect data for azimuth measurement.
-    steer(config.az_min, config.el_min, false);
+    steer(config.az_min, config.el_min, true);
     steer(config.az_max, config.el_min, true);
+    steer(source_az, config.el_min, true);
 
     // Steer to and collect data for elevation measurement.
-    steer(source_az, config.el_max - 90, false);
+    steer(source_az, config.el_max - 90, true);
     steer(source_az, config.el_min, true);
 }
 
