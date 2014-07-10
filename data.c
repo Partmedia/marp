@@ -26,7 +26,7 @@ static const char *format = "%f\t%f\t%d\n";
 static const int NODATA = -55;
 
 struct dataset_s {
-    int max_strength[360];
+    int max_strength[360], avg_strength[360], avg_count[360];
 };
 
 /** Current data set for holding temporary data. */
@@ -47,6 +47,8 @@ static int compass_translate(int angle) {
 static void data_clear(struct dataset_s *set) {
     for (int i = 0; i < 360; i++) {
         set->max_strength[i] = NODATA;
+        set->avg_strength[i] = NODATA;
+        set->avg_count[i] = 0;
     }
 }
 
@@ -78,18 +80,22 @@ void data_init() {
  * already performed sanity checking on the data.
  */
 static void data_add(float azimuth, float elevation, int strength) {
-    const int azimuth_rnd = (int)roundf(azimuth);
-    const int elevation_rnd = (int)roundf(elevation);
+    const int az_rnd = (int)roundf(azimuth);
 
     // Ignore data points that are out of bounds.
-    if (azimuth_rnd < 0 || azimuth_rnd >= 360) {
+    if (az_rnd < 0 || az_rnd >= 360) {
         return;
     }
 
     // Record the maximum signal strength at a given orientation.
-    if (set.max_strength[azimuth_rnd] < strength) {
-        set.max_strength[azimuth_rnd] = strength;
+    if (set.max_strength[az_rnd] < strength) {
+        set.max_strength[az_rnd] = strength;
     }
+
+    // Update average signal strength.
+    set.avg_strength[az_rnd] =
+        (set.avg_strength[az_rnd] * set.avg_count[az_rnd] + strength) /
+        ++set.avg_count[az_rnd];
 }
 
 /**
