@@ -27,6 +27,7 @@ static const int NODATA = -55;
 
 struct dataset_s {
     int max_strength[360], avg_strength[360], avg_count[360];
+    bool elevation;
 };
 
 /** Current data set for holding temporary data. */
@@ -49,6 +50,7 @@ static void data_clear(struct dataset_s *set) {
         set->max_strength[i] = NODATA;
         set->avg_strength[i] = NODATA;
         set->avg_count[i] = 0;
+        set->elevation = false;
     }
 }
 
@@ -79,23 +81,23 @@ void data_init() {
  * Add a single data point to the current data set. The caller should have
  * already performed sanity checking on the data.
  */
-static void data_add(float azimuth, float elevation, int strength) {
-    const int az_rnd = (int)roundf(azimuth);
+static void data_add(float position, int strength) {
+    const int pos_rnd = (int)roundf(position);
 
     // Ignore data points that are out of bounds.
-    if (az_rnd < 0 || az_rnd >= 360) {
+    if (pos_rnd < 0 || pos_rnd >= 360) {
         return;
     }
 
     // Record the maximum signal strength at a given orientation.
-    if (set.max_strength[az_rnd] < strength) {
-        set.max_strength[az_rnd] = strength;
+    if (set.max_strength[pos_rnd] < strength) {
+        set.max_strength[pos_rnd] = strength;
     }
 
     // Update average signal strength.
-    set.avg_strength[az_rnd] =
-        (set.avg_strength[az_rnd] * set.avg_count[az_rnd] + strength) /
-        ++set.avg_count[az_rnd];
+    set.avg_strength[pos_rnd] =
+        (set.avg_strength[pos_rnd] * set.avg_count[pos_rnd] + strength) /
+        ++set.avg_count[pos_rnd];
 }
 
 /**
@@ -106,53 +108,59 @@ void data_load(FILE *file) {
     int line = 1, origin_az = 0;
 
     while (fgets(buf, sizeof(buf), file) != NULL) {
-        float azimuth, elevation;
-        int strength;
-
         if (buf[0] == '#') {
-            if (sscanf(buf, "# @set %s %d\n", buf, &origin_az) >= 1) {
-                // Zero out the previous set and start a new one.
-                data_clear(&set);
-                printf("# Data Set: %s\tOrigin: %d\n", buf, origin_az);
+            if (sscanf(buf, "# @%s %d,%*d\n", buf, &origin_az) >= 1) {
+                if (strcmp(buf, "origin") == 0) {
+                    printf("# Origin: %d\n", origin_az);
+                } else if (strcmp(buf, "azimuth") == 0) {
+                    printf("#### Azimuth ####\n");
+                    data_clear(&set);
+                    set.elevation = false;
+                } else if (strcmp(buf, "elevation") == 0) {
+                    data_pattern_dump(origin_az);
+                    printf("#### Elevation ####\n");
+                    data_clear(&set);
+                    set.elevation = true;
+                } else {
+                    fprintf(stderr, "%d: warning: unknown command\n", line);
+                }
             }
         } else {
+            float azimuth, elevation;
+            int strength;
+
             if (sscanf(buf, format, &azimuth, &elevation, &strength) != 3) {
-                fprintf(stderr, "Data file format error on line %d\n", line);
+                fprintf(stderr, "%d: error: invalid data format\n", line);
                 exit(EXIT_FAILURE);
             }
 
-            data_add(azimuth, elevation, strength);
+            if (!set.elevation) {
+                data_add(azimuth, strength);
+            } else {
+                data_add(elevation, strength);
+            }
         }
 
         line++;
     }
 
-    // Dump the data from the last set. Only the last set is dumped.
+    // Dump the data from the elevation pattern.
     data_pattern_dump(origin_az);
-}
-
-/**
- * Record future entries in a new data set with the given name. The name must
- * not contain any whitespace.
- */
-void data_addset(const char *format, ...) {
-    va_list args;
-
-    fprintf(log_file, "# @set ");
-    va_start(args, format);
-    vfprintf(log_file, format, args);
-    va_end(args);
-    fprintf(log_file, "\n");
-
-    fflush(log_file);
 }
 
 /**
  * Make an annotation in the current data log. This function should only be
  * used when recording live data.
  */
-void data_annotate(const char *message) {
-    fprintf(log_file, "# %s\n", message);
+void data_annotate(const char *format, ...) {
+    va_list args;
+
+    fprintf(log_file, "# ");
+    va_start(args, format);
+    vfprintf(log_file, format, args);
+    va_end(args);
+    fprintf(log_file, "\n");
+
     fflush(log_file);
 }
 
@@ -166,20 +174,25 @@ void data_record(float azimuth, float elevation, int strength) {
 }
 
 /**
- * Dump the contents of the current data set. When finished, clear the current
- * data set from memory. Always call this function before adding a new data
- * set and recording data to it.
+ * Print the current data set in a Gnuplot-friendly format. Do not forget to
+ * clear the data set before starting another one.
  */
 static void data_pattern_dump(int origin_az) {
     for (int i = 0; i < 360; i++) {
         int current_str = set.max_strength[i];
 
         if (current_str != NODATA) {
-            int current_angle = i - origin_az;
-            printf("%d\t%d\n", compass_translate(current_angle), current_str);
+            int display_angle;
+
+            if (!set.elevation) {
+                display_angle = compass_translate(i - origin_az);
+            } else {
+                display_angle = i;
+            }
+
+            printf("%d\t%d\n", display_angle, current_str);
         }
     }
 
     fflush(stdout);
-    data_clear(&set);
 }

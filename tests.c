@@ -85,11 +85,13 @@ static void scan_planes(int source_az, int source_el) {
     steer(source_az, config.el_min, false);
 
     // Steer to and collect data for azimuth measurement.
+    data_annotate("@azimuth");
     steer(config.az_min, config.el_min, true);
     steer(config.az_max, config.el_min, true);
     steer(source_az, config.el_min, true);
 
     // Steer to and collect data for elevation measurement.
+    data_annotate("@elevation");
     steer(source_az, config.el_max - 90, true);
     steer(source_az, config.el_min, true);
 }
@@ -99,7 +101,7 @@ static void scan_planes(int source_az, int source_el) {
  */
 static void ant_scan(int start_az, int start_el) {
     fprintf(stderr, "===>>> Starting antenna measurement...\n");
-    data_addset("ant_scan %d,%d", start_az, start_el);
+    data_annotate("@origin %d,%d", start_az, start_el);
     source_on();
     scan_planes(start_az, start_el);
     source_off();

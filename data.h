@@ -8,8 +8,7 @@
 
 #include <stdio.h>
 
-void data_addset(const char *format, ...);
-void data_annotate(const char *message);
+void data_annotate(const char *format, ...);
 void data_init(void);
 void data_load(FILE *file);
 void data_record(float azimuth, float elevation, int strength);
