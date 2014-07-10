@@ -22,6 +22,9 @@ static FILE *log_file;
 /** Data format. */
 static const char *format = "%f\t%f\t%d\n";
 
+/** Sentinel value for empty data. */
+static const int NODATA = -55;
+
 struct dataset_s {
     int max_strength[360];
 };
@@ -43,7 +46,7 @@ static int compass_translate(int angle) {
  */
 static void data_clear(struct dataset_s *set) {
     for (int i = 0; i < 360; i++) {
-        set->max_strength[i] = -54;
+        set->max_strength[i] = NODATA;
     }
 }
 
@@ -163,9 +166,11 @@ void data_record(float azimuth, float elevation, int strength) {
  */
 static void data_pattern_dump(int origin_az) {
     for (int i = 0; i < 360; i++) {
-        if (set.max_strength[i] != -54) {
-            printf("%d\t%d\n", compass_translate(i - origin_az),
-                    set.max_strength[i]);
+        int current_str = set.max_strength[i];
+
+        if (current_str != NODATA) {
+            int current_angle = i - origin_az;
+            printf("%d\t%d\n", compass_translate(current_angle), current_str);
         }
     }
 
