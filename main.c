@@ -43,6 +43,7 @@ static void print_usage() {
         "   -h              Display this help message.\n"
         "   -l FILE         Load recorded data from a file.\n"
         "   -m ID           Set antenna rotator model.\n"
+        "   -o ORIGIN       Set the direction of the source antenna.\n"
         "   -r DEVICE       Set receiver device.\n"
         "   -w FILE         Write data log to a file.\n"
     );
@@ -58,11 +59,11 @@ static void parse_args(int argc, char *argv[]) {
     config.rot_file = "/dev/ttyU0";
     config.rig_file = "/dev/ttyU1";
     config.rig_model = 214;
-    config.az_min = 0, config.az_max = 359;
+    config.az_min = 0, config.az_max = 359, config.az_origin = 0;
     config.el_min = 0, config.el_max = 180;
     config.write_file = "data.log";
 
-    while ((flag = getopt(argc, argv, "a:d:hl:m:r:w:")) != -1) {
+    while ((flag = getopt(argc, argv, "a:d:hl:m:o:r:w:")) != -1) {
         switch (flag) {
             case 'a':
                 if (sscanf(optarg, "%d,%d", &config.az_min,
@@ -89,6 +90,9 @@ static void parse_args(int argc, char *argv[]) {
                 break;
             case 'm':
                 config.rot_model = atoi(optarg);
+                break;
+            case 'o':
+                config.az_origin = atoi(optarg);
                 break;
             case 'r':
                 config.rig_file = optarg;

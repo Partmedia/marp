@@ -113,5 +113,5 @@ static void ant_scan(int start_az, int start_el) {
  * Run the whole suite of tests for an antenna.
  */
 void tests_run() {
-    ant_scan(90, 0);
+    ant_scan(config.az_origin, 0);
 }
