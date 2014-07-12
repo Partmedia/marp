@@ -12,12 +12,12 @@
  * Ask human operator to turn source on.
  */
 void source_on() {
-    receiver_send_morse("TEST DE KD0LGH SRC ON");
+    receiver_send_morse("TEST SRC ON");
 }
 
 /**
  * Ask human operator to turn source off.
  */
 void source_off() {
-    receiver_send_morse("KD0LGH CL");
+    receiver_send_morse("CL");
 }
